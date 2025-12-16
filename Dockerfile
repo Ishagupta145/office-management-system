@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libicu-dev \
     libpq-dev \
+    nodejs \
+    npm \
     && docker-php-ext-install \
         pdo \
         pdo_mysql \
@@ -23,30 +25,27 @@ RUN apt-get update && apt-get install -y \
         intl \
         gd
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy project files
+# Copy files
 COPY . .
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# Install dependencies
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# Create required Laravel directories & permissions
-RUN mkdir -p storage/framework/cache \
-    storage/framework/sessions \
-    storage/framework/views \
-    bootstrap/cache \
+# Install & build frontend assets
+RUN npm install && npm run build
+
+# Laravel directories & permissions
+RUN mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Set Apache document root to /public
+# Apache public root
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
 
+# Auto-run migrations
 CMD php artisan migrate --force || true && apache2-foreground
-
