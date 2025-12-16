@@ -14,9 +14,11 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libicu-dev \
+    libpq-dev \
     && docker-php-ext-install \
         pdo \
         pdo_mysql \
+        pdo_pgsql \
         zip \
         intl \
         gd
@@ -33,7 +35,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# Create required directories & fix permissions
+# Create required Laravel directories & permissions
 RUN mkdir -p storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
