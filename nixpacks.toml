@@ -5,8 +5,7 @@ PHP_VERSION = "8.4"
 nixPkgs = [
   "php84",
   "php84Packages.composer",
-  "nodejs_20",
-  "npm"
+  "nodejs_20"
 ]
 
 [phases.install]
