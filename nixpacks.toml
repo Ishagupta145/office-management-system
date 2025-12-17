@@ -16,5 +16,11 @@ cmds = [
   "npm run build"
 ]
 
+# 👉 ADD THIS SECTION (THIS IS WHERE MIGRATE GOES)
+[phases.build]
+cmds = [
+  "php artisan migrate --force || true"
+]
+
 [start]
 cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
