@@ -1,3 +1,6 @@
+[variables]
+PHP_VERSION = "8.4"
+
 [phases.setup]
 nixPkgs = [
   "php84",
@@ -8,6 +11,7 @@ nixPkgs = [
 
 [phases.install]
 cmds = [
+  "php -v",
   "composer install --no-dev --optimize-autoloader",
   "npm install",
   "npm run build"
