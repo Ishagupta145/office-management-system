@@ -1,7 +1,7 @@
 FROM php:8.4-apache
 
-# 🔧 FIX 1: Ensure only ONE Apache MPM is enabled
-RUN a2dismod mpm_event mpm_worker || true \
+# 🔥 HARD RESET Apache MPMs (THIS IS THE KEY FIX)
+RUN a2dismod mpm_event mpm_worker mpm_prefork || true \
     && a2enmod mpm_prefork rewrite
 
 # Install system dependencies
@@ -40,14 +40,14 @@ RUN npm install && npm run build
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Set Apache document root
+# Set Laravel public directory
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
     /etc/apache2/sites-available/*.conf \
     /etc/apache2/apache2.conf \
     /etc/apache2/conf-available/*.conf
 
-# 🔧 FIX 2: Make Apache listen on Railway PORT
+# Make Apache listen on Railway PORT
 RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf \
     /etc/apache2/sites-available/000-default.conf
 
