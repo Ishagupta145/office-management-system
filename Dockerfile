@@ -14,38 +14,34 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libicu-dev \
-    libpq-dev \
     nodejs \
     npm \
     && docker-php-ext-install \
         pdo \
         pdo_mysql \
-        pdo_pgsql \
         zip \
         intl \
         gd
 
 WORKDIR /var/www/html
 
-# Copy files
+# Copy project files
 COPY . .
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+RUN composer install --no-dev --optimize-autoloader
 
-# Install & build frontend assets
+# Build frontend assets
 RUN npm install && npm run build
 
-# Laravel directories & permissions
-RUN mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
+# Fix permissions
+RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Apache public root
+# Set Apache document root to /public
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
 
-# Auto-run migrations
-CMD php artisan migrate --force || true && apache2-foreground
+CMD ["apache2-foreground"]
