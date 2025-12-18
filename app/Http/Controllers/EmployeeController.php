@@ -40,7 +40,9 @@ class EmployeeController extends Controller
                 ->addColumn('full_name', fn ($e) => $e->full_name)
                 ->addColumn('company_name', fn ($e) => $e->company->name ?? 'N/A')
                 ->addColumn('manager_name', fn ($e) => $e->manager?->full_name ?? 'N/A')
-                ->addColumn('action', fn ($e) => view('employees.partials.actions', compact('e')))
+                ->addColumn('action', function ($employee) {
+                return view('employees.partials.actions', compact('employee'));
+                })
                 ->rawColumns(['action'])
                 ->make(true);
         }
