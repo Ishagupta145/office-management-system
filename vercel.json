@@ -10,10 +10,6 @@
             "dest": "/public/build/$1"
         },
         {
-            "src": "/assets/(.*)",
-            "dest": "/public/assets/$1"
-        },
-        {
             "src": "/favicon.ico",
             "dest": "/public/favicon.ico"
         },
@@ -25,7 +21,7 @@
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "true",
-        "APP_URL": "https://YOUR_VERCEL_PROJECT_URL.vercel.app",
+        "APP_URL": "https://YOUR_PROJECT_NAME.vercel.app",
         "APP_CONFIG_CACHE": "/tmp/config.php",
         "APP_EVENTS_CACHE": "/tmp/events.php",
         "APP_PACKAGES_CACHE": "/tmp/packages.php",
