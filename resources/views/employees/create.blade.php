@@ -264,13 +264,13 @@ $(document).ready(function() {
             $('#country').html('<option value="">Select Country</option>');
 
             data.forEach(function(country) {
-                const selected = country.country_name === savedCountry ? 'selected' : '';
-                $('#country').append(
-                    `<option value="${country.country_name}" ${selected}>
-                        ${country.country_name}
-                     </option>`
-                );
-            });
+    const selected = country.name === savedCountry ? 'selected' : '';
+    $('#country').append(
+        `<option value="${country.name}" ${selected}>
+            ${country.name}
+         </option>`
+    );
+});
 
             if (savedCountry) {
                 currentCountry = savedCountry;
