@@ -22,9 +22,6 @@ Route::prefix('api/locations')->group(function () {
     Route::get('/cities/{state}', [LocationController::class, 'getCities']);
 });
 
-// Manager-by-company API
-Route::prefix('api')->group(function () {
-    Route::get('/companies/{companyId}/managers', [EmployeeController::class, 'getManagersByCompany']);
-});
-
-
+// Manager routes
+Route::get('/employees/managers/{companyId}', [EmployeeController::class, 'getManagersByCompany']);
+Route::get('/api/companies/{companyId}/managers', [EmployeeController::class, 'getManagersByCompany']);
