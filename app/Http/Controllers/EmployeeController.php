@@ -130,7 +130,7 @@ class EmployeeController extends Controller
     public function getManagersByCompany($companyId)
 {
     $managers = Employee::where('company_id', $companyId)
-        ->whereNull('manager_id') // or your logic
+        ->where('position', 'Manager')
         ->select('id', 'first_name', 'last_name')
         ->get()
         ->map(function ($m) {
