@@ -11,109 +11,91 @@ class LocationController extends Controller
 {
     private $baseUrl = 'https://countriesnow.space/api/v0.1';
 
-    /**
-     * Get all countries
-     */
     public function getCountries()
     {
-        return Cache::remember('countries', 86400, function () {
-            try {
-                $response = Http::timeout(15)
-                    ->get('https://countriesnow.space/api/v0.1/countries/positions');
+        try {
+            $countries = Cache::remember('countries', 86400, function () {
+                $response = Http::withoutVerifying()
+                    ->timeout(15)
+                    ->get($this->baseUrl . '/countries/positions');
 
-                if ($response->successful()) {
-                    return response()->json($response->json()['data']);
+                if (!$response->successful()) {
+                    throw new \Exception('Countries API failed');
                 }
 
-                return response()->json([], 500);
-            } catch (\Exception $e) {
-                Log::error('Country API Error: ' . $e->getMessage());
-                return response()->json([], 500);
-            }
-        });
+                return $response->json('data') ?? [];
+            });
+
+            return response()->json($countries);
+
+        } catch (\Exception $e) {
+            Log::error('Country API Error: ' . $e->getMessage());
+            return response()->json([], 500);
+        }
     }
 
-
-    /**
-     * Get states for a specific country
-     */
     public function getStates($country)
     {
-        return Cache::remember("states_{$country}", 86400, function () use ($country) {
-            try {
-                $response = Http::timeout(10)
+        try {
+            $states = Cache::remember("states_{$country}", 86400, function () use ($country) {
+                $response = Http::withoutVerifying()
+                    ->timeout(10)
                     ->post($this->baseUrl . '/countries/states', [
                         'country' => $country
                     ]);
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    
-                    if (isset($data['data']['states']) && is_array($data['data']['states'])) {
-                        $states = collect($data['data']['states'])
-                            ->map(function ($state) {
-                                return [
-                                    'state_name' => is_array($state) ? $state['name'] : $state
-                                ];
-                            })
-                            ->sortBy('state_name')
-                            ->values()
-                            ->toArray();
-                        
-                        return response()->json($states);
-                    }
+                if (!$response->successful()) {
+                    throw new \Exception('States API failed');
                 }
 
-                return response()->json([]);
+                return collect($response->json('data.states') ?? [])
+                    ->map(fn ($s) => ['state_name' => $s['name'] ?? $s])
+                    ->sortBy('state_name')
+                    ->values()
+                    ->toArray();
+            });
 
-            } catch (\Exception $e) {
-                Log::error('Error fetching states for ' . $country . ': ' . $e->getMessage());
-                return response()->json(['error' => 'Failed to fetch states', 'message' => $e->getMessage()], 500);
-            }
-        });
+            return response()->json($states);
+
+        } catch (\Exception $e) {
+            Log::error("States API Error ({$country}): " . $e->getMessage());
+            return response()->json([], 500);
+        }
     }
 
-    /**
-     * Get cities for a specific state and country
-     */
     public function getCities(Request $request, $state)
     {
         $country = $request->query('country');
-        
+
         if (!$country) {
-            return response()->json(['error' => 'Country parameter is required'], 400);
+            return response()->json([], 400);
         }
 
-        return Cache::remember("cities_{$country}_{$state}", 86400, function () use ($country, $state) {
-            try {
-                $response = Http::timeout(10)
+        try {
+            $cities = Cache::remember("cities_{$country}_{$state}", 86400, function () use ($country, $state) {
+                $response = Http::withoutVerifying()
+                    ->timeout(10)
                     ->post($this->baseUrl . '/countries/state/cities', [
                         'country' => $country,
                         'state' => $state
                     ]);
 
-
-                if ($response->successful()) {
-                    $data = $response->json();
-                    
-                    if (isset($data['data']) && is_array($data['data'])) {
-                        $cities = collect($data['data'])
-                            ->sort()
-                            ->values()
-                            ->map(function ($city) {
-                                return ['city_name' => $city];
-                            });
-                        
-                        return response()->json($cities);
-                    }
+                if (!$response->successful()) {
+                    throw new \Exception('Cities API failed');
                 }
 
-                return response()->json([]);
+                return collect($response->json('data') ?? [])
+                    ->sort()
+                    ->map(fn ($city) => ['city_name' => $city])
+                    ->values()
+                    ->toArray();
+            });
 
-            } catch (\Exception $e) {
-                Log::error('Error fetching cities for ' . $state . ', ' . $country . ': ' . $e->getMessage());
-                return response()->json(['error' => 'Failed to fetch cities', 'message' => $e->getMessage()], 500);
-            }
-        });
+            return response()->json($cities);
+
+        } catch (\Exception $e) {
+            Log::error("Cities API Error ({$state}, {$country}): " . $e->getMessage());
+            return response()->json([], 500);
+        }
     }
 }
