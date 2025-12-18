@@ -13,7 +13,16 @@ class EmployeeController extends Controller
     {
         if ($request->ajax()) {
             $query = Employee::with(['company', 'manager'])
-                ->select('employees.*');
+                ->select([
+                    'employees.id',
+                    'employees.first_name',
+                    'employees.last_name',
+                    'employees.email',
+                    'employees.phone',
+                    'employees.company_id',
+                    'employees.manager_id',
+                    'employees.position'
+                ]);
 
             // Apply company filter
             if ($request->has('company_id') && $request->company_id != '') {

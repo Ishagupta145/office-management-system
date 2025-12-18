@@ -18,7 +18,6 @@ class LocationController extends Controller
 {
     try {
         $response = Http::timeout(15)
-            ->withoutVerifying()   // fixes SSL issues on localhost
             ->get('https://countriesnow.space/api/v0.1/countries/positions');
 
         if ($response->successful()) {
@@ -41,7 +40,6 @@ class LocationController extends Controller
     {
         try {
             $response = Http::timeout(10)
-    ->withoutVerifying()
     ->post($this->baseUrl . '/countries/states', [
         'country' => $country
     ]);
