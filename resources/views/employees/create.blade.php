@@ -258,7 +258,7 @@ $(document).ready(function() {
     loadCountries();
     function loadCountries() {
     $.ajax({
-        url: '/api/locations/countries',
+        url: '/locations/countries',
         method: 'GET',
         success: function(data) {
             $('#country').html('<option value="">Select Country</option>');
@@ -291,7 +291,7 @@ $(document).ready(function() {
         currentCountry = country;
 
         $.ajax({
-            url: `/api/locations/states/${encodeURIComponent(country)}`,
+            url: `/locations/states/${encodeURIComponent(country)}`,
             method: 'GET',
             success: function(data) {
                 $('#state').html('<option value="">Select State</option>');
@@ -322,7 +322,7 @@ $(document).ready(function() {
         $('#city').prop('disabled', true).html('<option value="">Loading...</option>');
 
         $.ajax({
-            url: `/api/locations/cities/${encodeURIComponent(state)}?country=${encodeURIComponent(country)}`,
+            url: `/locations/cities/${encodeURIComponent(state)}?country=${encodeURIComponent(country)}`,
             method: 'GET',
             success: function(data) {
                 $('#city').html('<option value="">Select City</option>');
@@ -381,7 +381,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: `/api/companies/${companyId}/managers`,
+            url: `/companies/${companyId}/managers`,
             method: 'GET',
             success: function (data) {
                 $('#manager_id').html('<option value="">No Manager</option>');
