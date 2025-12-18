@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class LocationController extends Controller
 {
@@ -17,29 +16,26 @@ class LocationController extends Controller
     public function getCountries()
     {
         try {
-            return Cache::remember('countries_list', 86400, function () {
+            $response = Http::withHeaders([
+                    'Accept' => 'application/json',
+                ])
+                ->withoutVerifying()   // required for Vercel
+                ->timeout(20)
+                ->get($this->baseUrl . '/countries/positions');
 
-                $response = Http::withHeaders([
-                        'Accept' => 'application/json',
-                    ])
-                    ->withoutVerifying()
-                    ->timeout(20)
-                    ->get($this->baseUrl . '/countries/positions');
+            if ($response->successful() && isset($response->json()['data'])) {
+                return response()->json($response->json()['data']);
+            }
 
-                if ($response->successful() && isset($response->json()['data'])) {
-                    return response()->json($response->json()['data']);
-                }
+            Log::error('Countries API failed', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
 
-                Log::error('Countries API failed', [
-                    'status' => $response->status(),
-                    'body'   => $response->body(),
-                ]);
-
-                return response()->json([], 500);
-            });
+            return response()->json([], 500);
 
         } catch (\Exception $e) {
-            Log::error('Country API Error: ' . $e->getMessage());
+            Log::error('Country API Exception: ' . $e->getMessage());
             return response()->json([], 500);
         }
     }
@@ -60,11 +56,12 @@ class LocationController extends Controller
                 ]);
 
             if ($response->successful()) {
-
                 $states = collect($response->json('data.states', []))
                     ->map(function ($state) {
                         return [
-                            'state_name' => is_array($state) ? ($state['name'] ?? '') : $state,
+                            'state_name' => is_array($state)
+                                ? ($state['name'] ?? '')
+                                : $state,
                         ];
                     })
                     ->filter(fn ($s) => !empty($s['state_name']))
@@ -83,7 +80,7 @@ class LocationController extends Controller
             return response()->json([]);
 
         } catch (\Exception $e) {
-            Log::error("State API Error ($country): " . $e->getMessage());
+            Log::error("State API Exception ($country): " . $e->getMessage());
             return response()->json([], 500);
         }
     }
@@ -111,7 +108,6 @@ class LocationController extends Controller
                 ]);
 
             if ($response->successful()) {
-
                 $cities = collect($response->json('data', []))
                     ->sort()
                     ->map(fn ($city) => ['city_name' => $city])
@@ -130,7 +126,7 @@ class LocationController extends Controller
             return response()->json([]);
 
         } catch (\Exception $e) {
-            Log::error("City API Error ($state, $country): " . $e->getMessage());
+            Log::error("City API Exception ($state, $country): " . $e->getMessage());
             return response()->json([], 500);
         }
     }

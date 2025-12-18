@@ -101,7 +101,9 @@ class EmployeeController extends Controller
     public function edit(Employee $employee)
     {
         $companies = Company::all();
-        $managers = Employee::where('id', '!=', $employee->id)->get();
+        $managers = Employee::where('company_id', $employee->company_id)
+            ->where('id', '!=', $employee->id)
+            ->get();
 
         return view('employees.edit', compact('employee', 'companies', 'managers'));
     }
@@ -126,7 +128,7 @@ class EmployeeController extends Controller
             'hire_date'  => 'nullable|date',
         ]);
 
-        if ($validated['manager_id'] ?? null == $employee->id) {
+        if (($validated['manager_id'] ?? null) == $employee->id) {
             return back()->withErrors([
                 'manager_id' => 'An employee cannot be their own manager.',
             ]);
@@ -148,15 +150,16 @@ class EmployeeController extends Controller
         return redirect()->route('employees.index')
             ->with('success', 'Employee deleted successfully!');
     }
-/**
-     * Get managers by company (for dynamic dropdowns)
-     */
 
+    /**
+     * Get managers by company (AJAX dropdown)
+     */
     public function getManagersByCompany($companyId)
     {
         try {
             $managers = Employee::where('company_id', $companyId)
                 ->select('id', 'first_name', 'last_name')
+                ->orderBy('first_name')
                 ->get()
                 ->map(fn ($e) => [
                     'id'   => $e->id,
