@@ -23,3 +23,18 @@ Route::prefix('locations')->group(function () {
 
 // Manager API Route
 Route::get('/companies/{companyId}/managers', [EmployeeController::class, 'getManagersByCompany']);
+
+// Vercel serverless functions mount under `/api` and forward the remainder
+// of the path to the function (so a request to `/api/locations/countries`
+// becomes `GET /locations/countries` inside the function). Duplicate the
+// routes without the automatic `api/` prefix when running on Vercel so both
+// environments work.
+if (env('VERCEL') || env('VERCEL_ENV')) {
+    Route::prefix('locations')->group(function () {
+        Route::get('/countries', [LocationController::class, 'getCountries']);
+        Route::get('/states/{country}', [LocationController::class, 'getStates']);
+        Route::get('/cities/{state}', [LocationController::class, 'getCities']);
+    });
+
+    Route::get('/companies/{companyId}/managers', [EmployeeController::class, 'getManagersByCompany']);
+}
