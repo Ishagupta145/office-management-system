@@ -129,16 +129,18 @@ class EmployeeController extends Controller
 
     public function getManagersByCompany($companyId)
 {
-    return response()->json(
-        \App\Models\Employee::where('company_id', $companyId)
-            ->select('id', 'first_name', 'last_name')
-            ->get()
-            ->map(function ($e) {
-                return [
-                    'id' => $e->id,
-                    'name' => $e->first_name . ' ' . $e->last_name
-                ];
-            })
-    );
+    $managers = Employee::where('company_id', $companyId)
+        ->whereNull('manager_id') // or your logic
+        ->select('id', 'first_name', 'last_name')
+        ->get()
+        ->map(function ($m) {
+            return [
+                'id' => $m->id,
+                'name' => $m->first_name . ' ' . $m->last_name
+            ];
+        });
+
+    return response()->json($managers);
 }
 }
+

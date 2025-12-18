@@ -256,33 +256,34 @@ $(document).ready(function() {
 
     // Load countries on page load
     loadCountries();
-
     function loadCountries() {
-        $.ajax({
-            url: '/api/locations/countries',
-            method: 'GET',
-            success: function(data) {
-                $('#country').html('<option value="">Select Country</option>');
-                data.forEach(function(country) {
-    const selected = country.name === savedCountry ? 'selected' : '';
-    $('#country').append(
-        `<option value="${country.name}" ${selected}>
-            ${country.name}
-         </option>`
-    );
-});
-                
-                if (savedCountry) {
-                    currentCountry = savedCountry;
-                    loadStates(savedCountry);
-                }
-            },
-            error: function(error) {
-                console.error('Error loading countries:', error);
-                alert('Failed to load countries. Please refresh the page.');
+    $.ajax({
+        url: '/api/locations/countries',
+        method: 'GET',
+        success: function(data) {
+            $('#country').html('<option value="">Select Country</option>');
+
+            data.forEach(function(country) {
+                const selected = country.country_name === savedCountry ? 'selected' : '';
+                $('#country').append(
+                    `<option value="${country.country_name}" ${selected}>
+                        ${country.country_name}
+                     </option>`
+                );
+            });
+
+            if (savedCountry) {
+                currentCountry = savedCountry;
+                loadStates(savedCountry);
             }
-        });
-    }
+        },
+        error: function(error) {
+            console.error('Error loading countries:', error);
+            alert('Failed to load countries. Please refresh the page.');
+        }
+    });
+}
+
 
     function loadStates(country) {
         $('#state').prop('disabled', true).html('<option value="">Loading...</option>');
