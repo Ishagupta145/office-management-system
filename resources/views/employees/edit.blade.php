@@ -140,26 +140,25 @@
                     @enderror
                 </div>
 
-                <!-- Manager -->
+    <!-- Manager -->
                 <div>
                     <label for="manager_id" class="block text-sm font-medium text-gray-700 mb-2">
-                        Manager
+                    Manager
                     </label>
-                    <select name="manager_id" 
-                            id="manager_id" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('manager_id') border-red-500 @enderror">
-                        <option value="">No Manager</option>
-                        @foreach($managers as $manager)
-                            <option value="{{ $manager->id }}" 
-                                    {{ old('manager_id', $employee->manager_id ?? '') == $manager->id ? 'selected' : '' }}>
-                                {{ $manager->full_name }}
-                            </option>
-                        @endforeach
+
+                    <select name="manager_id"
+                    id="manager_id"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
+                            focus:border-blue-500 focus:ring-blue-500
+                            @error('manager_id') border-red-500 @enderror">
+                    <option value="">Select Company First</option>
                     </select>
+
                     @error('manager_id')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
+                
             </div>
 
             <!-- Location Fields -->
@@ -265,8 +264,8 @@ $(document).ready(function() {
             success: function(data) {
                 $('#country').html('<option value="">Select Country</option>');
                 data.forEach(function(country) {
-                    const selected = country.country_name === savedCountry ? 'selected' : '';
-                    $('#country').append(`<option value="${country.country_name}" ${selected}>${country.country_name}</option>`);
+                    const selected = country.name === savedCountry ? 'selected' : '';
+                    $('#country').append(`<option value="${country.name}" ${selected}>${country.name}</option>`);
                 });
                 
                 if (savedCountry) {
