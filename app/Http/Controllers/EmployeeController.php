@@ -57,6 +57,33 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
+    //Restore soft-deleted employee if email already exists
+    $existingEmployee = Employee::withTrashed()
+        ->where('email', $request->email)
+        ->first();
+
+    if ($existingEmployee && $existingEmployee->trashed()) {
+        $existingEmployee->restore();
+
+        // Update restored employee with new data
+        $existingEmployee->update($request->only([
+            'first_name',
+            'last_name',
+            'phone',
+            'position',
+            'salary',
+            'company_id',
+            'manager_id',
+            'country',
+            'state',
+            'city',
+            'hire_date'
+        ]));
+
+        return redirect()
+            ->route('employees.index')
+            ->with('success', 'Employee restored successfully!');
+    }
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
