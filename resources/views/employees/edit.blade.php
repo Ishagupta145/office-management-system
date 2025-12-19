@@ -259,7 +259,7 @@ $(document).ready(function() {
 
     function loadCountries() {
         $.ajax({
-            url: '/api/locations/countries',
+            url: '/locations/countries',
             method: 'GET',
             success: function(data) {
                 $('#country').html('<option value="">Select Country</option>');
@@ -286,7 +286,7 @@ $(document).ready(function() {
         currentCountry = country;
 
         $.ajax({
-            url: `/api/locations/states/${encodeURIComponent(country)}`,
+            url: `/locations/states/${encodeURIComponent(country)}`,
             method: 'GET',
             success: function(data) {
                 $('#state').html('<option value="">Select State</option>');
@@ -317,7 +317,7 @@ $(document).ready(function() {
         $('#city').prop('disabled', true).html('<option value="">Loading...</option>');
 
         $.ajax({
-            url: `/api/locations/cities/${encodeURIComponent(state)}?country=${encodeURIComponent(country)}`,
+            url: `/locations/cities/${encodeURIComponent(state)}?country=${encodeURIComponent(country)}`,
             method: 'GET',
             success: function(data) {
                 $('#city').html('<option value="">Select City</option>');
@@ -360,6 +360,52 @@ $(document).ready(function() {
             $('#city').prop('disabled', true).html('<option value="">Select City</option>');
         }
     });
+
+    // MANAGER DROPDOWN LOGIC
+
+const savedManager = "{{ old('manager_id', $employee->manager_id ?? '') }}";
+
+function loadManagers(companyId) {
+    $('#manager_id').html('<option value="">Loading managers...</option>');
+
+    $.ajax({
+        url: `/companies/${companyId}/managers`,
+        method: 'GET',
+        success: function (data) {
+            $('#manager_id').html('<option value="">No Manager</option>');
+
+            data.forEach(function (manager) {
+                $('#manager_id').append(
+                    `<option value="${manager.id}">${manager.name}</option>`
+                );
+            });
+
+            // Preselect manager on Edit
+            if (savedManager) {
+                $('#manager_id').val(savedManager);
+            }
+        },
+        error: function () {
+            $('#manager_id').html('<option value="">Error loading managers</option>');
+        }
+    });
+}
+
+// Load managers when company changes
+$('#company_id').on('change', function () {
+    const companyId = $(this).val();
+    if (companyId) {
+        loadManagers(companyId);
+    } else {
+        $('#manager_id').html('<option value="">Select Company First</option>');
+    }
+});
+
+// AUTO-LOAD managers on Edit page
+if ($('#company_id').val()) {
+    loadManagers($('#company_id').val());
+}
+
 });
 </script>
 @endpush
