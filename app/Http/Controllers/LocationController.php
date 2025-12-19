@@ -15,8 +15,7 @@ class LocationController extends Controller
     {
         try {
             $countries = Cache::remember('countries', 86400, function () {
-                $response = Http::withoutVerifying()
-                    ->timeout(15)
+                $response = Http::timeout(15)
                     ->get($this->baseUrl . '/countries/positions');
 
                 if (!$response->successful()) {
@@ -30,7 +29,7 @@ class LocationController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Country API Error: ' . $e->getMessage());
-            return response()->json([], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -38,8 +37,7 @@ class LocationController extends Controller
     {
         try {
             $states = Cache::remember("states_{$country}", 86400, function () use ($country) {
-                $response = Http::withoutVerifying()
-                    ->timeout(10)
+                $response = Http::timeout(10)
                     ->post($this->baseUrl . '/countries/states', [
                         'country' => $country
                     ]);
@@ -59,7 +57,7 @@ class LocationController extends Controller
 
         } catch (\Exception $e) {
             Log::error("States API Error ({$country}): " . $e->getMessage());
-            return response()->json([], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -73,8 +71,7 @@ class LocationController extends Controller
 
         try {
             $cities = Cache::remember("cities_{$country}_{$state}", 86400, function () use ($country, $state) {
-                $response = Http::withoutVerifying()
-                    ->timeout(10)
+                $response = Http::timeout(10)
                     ->post($this->baseUrl . '/countries/state/cities', [
                         'country' => $country,
                         'state' => $state
@@ -95,7 +92,7 @@ class LocationController extends Controller
 
         } catch (\Exception $e) {
             Log::error("Cities API Error ({$state}, {$country}): " . $e->getMessage());
-            return response()->json([], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }
